@@ -67,6 +67,7 @@ h2{margin:0 0 4px;font-size:22px}
 .suggestion-submit:hover{filter:brightness(1.08)}
 .suggestion-submit:disabled{opacity:.65;cursor:wait}
 .suggestion-status{min-height:1.45em;margin:0;font-size:13px;color:var(--mu)}
+.suggestion-status.activation{color:var(--ac)}
 .suggestion-status.success{color:var(--good)}
 .suggestion-status.error{color:var(--bad)}
 .suggestion-honeypot{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}
@@ -90,7 +91,7 @@ h2{margin:0 0 4px;font-size:22px}
       <div class="suggestion-field"><label for="suggestion-name">Name <span class="hint">· optional</span></label><input id="suggestion-name" name="name" type="text" maxlength="100" autocomplete="name" placeholder="How should we address you?"></div>
       <div class="suggestion-field"><label for="suggestion-email">Email for a reply <span class="hint">· optional</span></label><input id="suggestion-email" name="email" type="email" maxlength="254" autocomplete="email" placeholder="you@example.com"></div>
       <div class="suggestion-field"><label for="suggestion-message">Your suggestion</label><textarea id="suggestion-message" name="message" minlength="12" maxlength="3000" required placeholder="Describe the topic, correction, or improvement you have in mind."></textarea><div class="suggestion-meta"><span>Be specific so the guide can be improved.</span><span id="suggestion-count">0 / 3000</span></div></div>
-      <p class="suggestion-privacy">Submissions are relayed through FormSubmit to the guide author. Please do not include passwords, confidential process data, or other sensitive information. First-time delivery requires recipient confirmation.</p>
+      <p class="suggestion-privacy">Submissions are relayed through FormSubmit to the guide author. The first submission triggers an activation email; FormSubmit queues it until confirmation. Please do not include passwords, confidential process data, or other sensitive information.</p>
       <div class="suggestion-actions"><p id="suggestion-status" class="suggestion-status" role="status" aria-live="polite"></p><button class="suggestion-submit" type="submit">Send suggestion <span aria-hidden="true">→</span></button></div>
     </form>
   </div>
@@ -139,10 +140,15 @@ function updateSuggestionCount(){
 async function sendSuggestion(event){
   event.preventDefault();
   const form=event.currentTarget;
-  if(form.elements._honey.value.trim())return;
-  if(!form.reportValidity())return;
   const button=form.querySelector('button[type="submit"]');
   const status=document.getElementById("suggestion-status");
+  if(form.elements._honey.value.trim())return;
+  if(!form.reportValidity())return;
+  if(location.protocol==="file:"){
+    status.className="suggestion-status error";
+    status.textContent="Open the hosted guide at https://engomeryilmiz.github.io/Platform/ to send a suggestion; the email relay does not accept local file pages.";
+    return;
+  }
   const original=button.innerHTML;
   button.disabled=true;
   button.textContent="Sending…";
@@ -154,14 +160,21 @@ async function sendSuggestion(event){
     payload._subject="ChemEng guide suggestion — "+payload.category;
     const response=await fetch(SUGGESTION_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(payload)});
     const result=await response.json().catch(()=>({}));
-    if(!response.ok||result.success===false||result.success==="false")throw new Error("The relay did not accept this submission.");
+    const relayMessage=typeof result.message==="string"?result.message:"";
+    if(/activat/i.test(relayMessage)){
+      status.className="suggestion-status activation";
+      status.textContent="FormSubmit needs one-time activation. Check omeryilmiz0@gmail.com (including Spam) for its activation email. Your suggestion is queued until you confirm.";
+      return;
+    }
+    if(!response.ok||result.success===false||result.success==="false")throw new Error(relayMessage||"The email relay rejected the submission (HTTP "+response.status+").");
     form.reset();
     updateSuggestionCount();
     status.className="suggestion-status success";
-    status.textContent="Your suggestion was accepted by the email relay. First-time recipient confirmation may be required before delivery.";
+    status.textContent="Your suggestion was accepted by the email relay. Check your inbox for any required FormSubmit activation email.";
   }catch(error){
     status.className="suggestion-status error";
-    status.textContent="The suggestion could not be sent. Your text is still here; please try again shortly.";
+    const detail=error&&typeof error.message==="string"?error.message:"";
+    status.textContent=detail==="Failed to fetch"?"Could not reach FormSubmit. Check your connection and submit again from the hosted guide.":detail?"Submission failed: "+detail.slice(0,220):"The suggestion could not be sent. Your text is still here; please try again.";
   }finally{
     button.disabled=false;
     button.innerHTML=original;
