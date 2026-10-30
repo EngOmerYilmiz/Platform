@@ -42,10 +42,59 @@ h2{margin:0 0 4px;font-size:22px}
 @media(max-width:700px){.wrap{grid-template-columns:1fr}nav{display:flex;overflow-x:auto;gap:4px;border-right:0;border-bottom:1px solid var(--ln)}nav button{width:auto;white-space:nowrap}main{padding:14px}}
 
 .reference-card .book-note{color:var(--mu);font-size:13px;margin:-6px 0 8px}.reference-card .book-links{display:flex;flex-wrap:wrap;gap:8px}.reference-card .book-link{color:var(--ac);font-weight:700}
+.suggestion-tab .suggestion-icon{background:var(--ac);font-size:16px}
+.suggestion-dialog{position:fixed;margin:auto;padding:0;border:1px solid var(--ln);width:min(680px,calc(100vw - 24px));max-height:min(92dvh,900px);overflow:auto;border-radius:20px;color:var(--ink);background:var(--sf);box-shadow:0 28px 90px rgba(0,0,0,.38)}
+.suggestion-dialog::backdrop{background:rgba(8,18,34,.68);backdrop-filter:blur(5px)}
+.suggestion-dialog[open]{animation:suggestion-in .22s cubic-bezier(.16,1,.3,1) both}
+@keyframes suggestion-in{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+.suggestion-panel{padding:clamp(20px,4vw,34px)}
+.suggestion-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.suggestion-kicker{margin:0 0 8px;color:var(--ac);font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+.suggestion-title{font-size:clamp(1.35rem,4vw,1.8rem);line-height:1.2;margin:0 0 8px}
+.suggestion-intro{margin:0;color:var(--mu);font-size:14px}
+.suggestion-close{flex:none;width:40px;height:40px;border:1px solid var(--ln);border-radius:10px;background:var(--bg);color:var(--ink);font-size:24px;line-height:1;cursor:pointer}
+.suggestion-form{display:grid;gap:13px;margin-top:22px}
+.suggestion-field{display:grid;gap:6px}
+.suggestion-field label{font-weight:700;font-size:13px}
+.suggestion-field .hint{color:var(--mu);font-weight:400}
+.suggestion-field input,.suggestion-field select,.suggestion-field textarea{width:100%;border:1px solid var(--ln);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px;padding:11px 12px;outline:none}
+.suggestion-field input:focus,.suggestion-field select:focus,.suggestion-field textarea:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(15,118,110,.18)}
+.suggestion-field textarea{min-height:148px;resize:vertical}
+.suggestion-meta{display:flex;justify-content:space-between;gap:10px;color:var(--mu);font-size:12px}
+.suggestion-privacy{margin:0;color:var(--mu);font-size:12px;line-height:1.5}
+.suggestion-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:2px}
+.suggestion-submit{border:0;border-radius:10px;background:var(--ac);color:#fff;padding:11px 18px;font:700 14px/1.2 system-ui,sans-serif;cursor:pointer}
+.suggestion-submit:hover{filter:brightness(1.08)}
+.suggestion-submit:disabled{opacity:.65;cursor:wait}
+.suggestion-status{min-height:1.45em;margin:0;font-size:13px;color:var(--mu)}
+.suggestion-status.success{color:var(--good)}
+.suggestion-status.error{color:var(--bad)}
+.suggestion-honeypot{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}
+@media(max-width:520px){.suggestion-actions{align-items:stretch;flex-direction:column-reverse}.suggestion-submit{width:100%}}
+@media(prefers-reduced-motion:reduce){.suggestion-dialog[open]{animation:none}}
 </style>
 </head>
 <body>
-<header><div class="identity"><h1>ChemEng Concepts Guide - Eng. Omer Ibrahim</h1><div class="profile-tabs" role="group" aria-label="Author profiles"><a class="profile-tab" href="https://sa.linkedin.com/in/omer-ibrahim-ahmed" target="_blank" rel="noopener noreferrer" onclick="return openLinkedInProfile(event)" aria-label="Eng. Omer Ibrahim on LinkedIn"><span class="profile-icon linkedin-icon" aria-hidden="true">in</span><span>LinkedIn</span><span class="tab-arrow" aria-hidden="true">↗</span></a><a class="profile-tab developer-tab" href="#developer-profile" onclick="return openDeveloperProfile(event)" aria-label="Open Eng. Omer Ibrahim developer profile"><span class="profile-icon developer-icon" aria-hidden="true">&lt;/&gt;</span><span>Developer Profile</span><span class="tab-arrow" aria-hidden="true">↗</span></a></div></div><div class="pg"><span id="p"></span><div class="bar"><div id="b"></div></div></div></header>
+<header><div class="identity"><h1>ChemEng Concepts Guide - Eng. Omer Ibrahim</h1><div class="profile-tabs" role="group" aria-label="Author profiles"><a class="profile-tab" href="https://sa.linkedin.com/in/omer-ibrahim-ahmed" target="_blank" rel="noopener noreferrer" onclick="return openLinkedInProfile(event)" aria-label="Eng. Omer Ibrahim on LinkedIn"><span class="profile-icon linkedin-icon" aria-hidden="true">in</span><span>LinkedIn</span><span class="tab-arrow" aria-hidden="true">↗</span></a><a class="profile-tab developer-tab" href="#developer-profile" onclick="return openDeveloperProfile(event)" aria-label="Open Eng. Omer Ibrahim developer profile"><span class="profile-icon developer-icon" aria-hidden="true">&lt;/&gt;</span><span>Developer Profile</span><span class="tab-arrow" aria-hidden="true">↗</span></a><button class="profile-tab suggestion-tab" type="button" onclick="openSuggestionDialog()" aria-haspopup="dialog" aria-controls="suggestion-dialog" aria-label="Send a suggestion"><span class="profile-icon suggestion-icon" aria-hidden="true">✉</span><span>Suggestions</span></button></div></div><div class="pg"><span id="p"></span><div class="bar"><div id="b"></div></div></div></header>
+<dialog id="suggestion-dialog" class="suggestion-dialog" aria-labelledby="suggestion-title">
+  <div class="suggestion-panel">
+    <div class="suggestion-head">
+      <div><p class="suggestion-kicker">Guide feedback</p><h2 class="suggestion-title" id="suggestion-title">Share a suggestion</h2><p class="suggestion-intro">Help improve the technical depth, accuracy, and usability of this guide.</p></div>
+      <button class="suggestion-close" type="button" onclick="closeSuggestionDialog()" aria-label="Close suggestions">×</button>
+    </div>
+    <form id="suggestion-form" class="suggestion-form" action="https://formsubmit.co/omeryilmiz0@gmail.com" method="POST" accept-charset="UTF-8" onsubmit="sendSuggestion(event)">
+      <input type="hidden" name="_subject" value="New ChemEng Concepts Guide suggestion">
+      <input type="hidden" name="_template" value="table">
+      <label class="suggestion-honeypot" aria-hidden="true">Leave this field empty<input type="text" name="_honey" tabindex="-1" autocomplete="off"></label>
+      <div class="suggestion-field"><label for="suggestion-category">Suggestion type</label><select id="suggestion-category" name="category" required><option value="">Choose a category</option><option>New topic or industry</option><option>Technical correction</option><option>Reference or resource</option><option>Diagram or interaction</option><option>Accessibility or usability</option><option>Other</option></select></div>
+      <div class="suggestion-field"><label for="suggestion-name">Name <span class="hint">· optional</span></label><input id="suggestion-name" name="name" type="text" maxlength="100" autocomplete="name" placeholder="How should we address you?"></div>
+      <div class="suggestion-field"><label for="suggestion-email">Email for a reply <span class="hint">· optional</span></label><input id="suggestion-email" name="email" type="email" maxlength="254" autocomplete="email" placeholder="you@example.com"></div>
+      <div class="suggestion-field"><label for="suggestion-message">Your suggestion</label><textarea id="suggestion-message" name="message" minlength="12" maxlength="3000" required placeholder="Describe the topic, correction, or improvement you have in mind."></textarea><div class="suggestion-meta"><span>Be specific so the guide can be improved.</span><span id="suggestion-count">0 / 3000</span></div></div>
+      <p class="suggestion-privacy">Submissions are relayed through FormSubmit to the guide author. Please do not include passwords, confidential process data, or other sensitive information. First-time delivery requires recipient confirmation.</p>
+      <div class="suggestion-actions"><p id="suggestion-status" class="suggestion-status" role="status" aria-live="polite"></p><button class="suggestion-submit" type="submit">Send suggestion <span aria-hidden="true">→</span></button></div>
+    </form>
+  </div>
+</dialog>
 <div class="wrap"><nav id="nav"></nav><main id="main"></main></div>
 <script>
 function openLinkedInProfile(event) {
@@ -70,6 +119,56 @@ function openDeveloperProfile(event) {
     note: 'PROCESS DATA · ENGINEERING INSIGHT'
   });
 }
+const SUGGESTION_ENDPOINT = "https://formsubmit.co/ajax/omeryilmiz0@gmail.com";
+function openSuggestionDialog(){
+  const dialog=document.getElementById("suggestion-dialog");
+  const status=document.getElementById("suggestion-status");
+  status.textContent="";
+  status.className="suggestion-status";
+  dialog.showModal();
+  window.setTimeout(()=>document.getElementById("suggestion-category").focus(),0);
+}
+function closeSuggestionDialog(){
+  const dialog=document.getElementById("suggestion-dialog");
+  if(dialog.open)dialog.close();
+}
+function updateSuggestionCount(){
+  const field=document.getElementById("suggestion-message");
+  document.getElementById("suggestion-count").textContent=field.value.length+" / 3000";
+}
+async function sendSuggestion(event){
+  event.preventDefault();
+  const form=event.currentTarget;
+  if(form.elements._honey.value.trim())return;
+  if(!form.reportValidity())return;
+  const button=form.querySelector('button[type="submit"]');
+  const status=document.getElementById("suggestion-status");
+  const original=button.innerHTML;
+  button.disabled=true;
+  button.textContent="Sending…";
+  status.className="suggestion-status";
+  status.textContent="Sending your suggestion securely…";
+  try{
+    const payload=Object.fromEntries(new FormData(form).entries());
+    delete payload._honey;
+    payload._subject="ChemEng guide suggestion — "+payload.category;
+    const response=await fetch(SUGGESTION_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(payload)});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||result.success===false||result.success==="false")throw new Error("The relay did not accept this submission.");
+    form.reset();
+    updateSuggestionCount();
+    status.className="suggestion-status success";
+    status.textContent="Your suggestion was accepted by the email relay. First-time recipient confirmation may be required before delivery.";
+  }catch(error){
+    status.className="suggestion-status error";
+    status.textContent="The suggestion could not be sent. Your text is still here; please try again shortly.";
+  }finally{
+    button.disabled=false;
+    button.innerHTML=original;
+  }
+}
+document.getElementById("suggestion-message").addEventListener("input",updateSuggestionCount);
+document.getElementById("suggestion-dialog").addEventListener("click",event=>{if(event.target===event.currentTarget)closeSuggestionDialog();});
 function showProfileGateway(event, profile) {
   event.preventDefault();
   const destinationUrl = profile.url;
